@@ -123,4 +123,3 @@ function bps_bp_spam_stop_helper_check($minutes, $max, $friendsList) {
     }
 }
 
-?>
