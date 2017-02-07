@@ -18,13 +18,20 @@ function bps_load_textdomain() {
  */
 function bps_bp_spam_stop() {
     $current_user = wp_get_current_user();
-    if (!user_can($current_user, 'edit_users')) {
+    $member_types = (array)bp_get_member_type( $current_user->ID, false );
+    if ( empty( $member_types ) || ( 1 == count( $member_types ) && in_array( 'hc', $member_types ) ) ) {
+        $society_member = false;
+    } else {
+        $society_member = true;
+    }
+    if ( ! user_can( $current_user, 'edit_users' ) && ! $society_member ) {
         $abort = false;
         $timeDiff = time() - strtotime($current_user->user_registered);
         $hours = apply_filters('buddypress_messages_spamblocker_newMembersWaitingPeriod', 24);
 
         if ($timeDiff < (60 * 60 * $hours)) {
-            bp_core_add_message(sprintf(__('We want to protect other users from spam. New members are only allowed to send messages to other users when their registration is not older than %d hours. Please wait until this time is over and then feel free to write messages to other members!', 'buddypress-messages-spamblocker'), $hours), 'error');
+            //bp_core_add_message(sprintf(__('We want to protect other users from spam. New members are only allowed to send messages to other users when their registration is not older than %d hours. Please wait until this time is over and then feel free to write messages to other members!', 'buddypress-messages-spamblocker'), $hours), 'error');
+            bp_core_add_message(sprintf(__('Because we want to protect our community from spam, new members have to wait %d hours before sending messages. Please try again tomorrow.', 'buddypress-messages-spamblocker'), $hours), 'error');
             $abort = true;
         } else {
             // exclude friends from spam mechanism
@@ -64,7 +71,8 @@ function bps_bp_spam_stop() {
             }
 
             if ($abort) {
-                bp_core_add_message(__('We want to avoid SPAM. You are only allowed to start a limited number of new conversations in a given period. You can add your recipients as friends. There are no restrictions for new conversations you start with your friends!', 'buddypress-messages-spamblocker'), 'error');
+                //bp_core_add_message(__('We want to avoid SPAM. You are only allowed to start a limited number of new conversations in a given period. You can add your recipients as friends. There are no restrictions for new conversations you start with your friends!', 'buddypress-messages-spamblocker'), 'error');
+                bp_core_add_message(__('Because we want to protect our community from spam, we only let members start a limited number of new conversations in a given period. Please try again later.', 'buddypress-messages-spamblocker'), 'error');
             }
         }
         // Check results
